@@ -1,0 +1,31 @@
+
+body {
+    overflow-x: hidden;
+    font-family: 'Droid Sans Mono', arial, serif;
+    color: white;
+    background-color: black;
+}
+
+#traffic {
+    width: 99%;
+    height: 300px;
+}
+
+.statTable {
+	background: black;
+	margin: 45px;
+	width: 480px;
+	border-collapse: collapse;
+	text-align: left;
+}
+.statTable th {
+	font-weight: normal;
+	color: white;
+	padding: 10px 8px;
+	border-bottom: 2px solid grey;
+}
+.statTable td {
+	color: white;
+	padding: 9px 8px 0px 8px;
+}
+

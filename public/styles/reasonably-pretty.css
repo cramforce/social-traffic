@@ -6,17 +6,29 @@ body {
     background-color: black;
 }
 
-#traffic {
-    width: 99%;
+.graph {
+    width: 100%;
     height: 300px;
+}
+
+#totals {
+    max-height: 390px;
+    overflow:auto;
+}
+
+section {
+  background-color: #ccc;
+  margin: 5px;
+  padding: 10px;
+  border-radius: 15px;
 }
 
 .statTable {
 	background: black;
-	margin: 45px;
-	width: 480px;
+	width: 390px;
 	border-collapse: collapse;
 	text-align: left;
+	float:left;
 }
 .statTable th {
 	font-weight: normal;
@@ -28,4 +40,9 @@ body {
 	color: white;
 	padding: 9px 8px 0px 8px;
 }
-
+.statTable td:nth-child( even ) {
+    text-align: right;
+}
+.statTable tr {
+  cursor: pointer;
+}

@@ -1,28 +1,56 @@
 <!doctype html>
 <html>
 <head>
+  <title>Social Traffic</title>
   <link rel="stylesheet" type="text/css" href="styles/reasonably-pretty.css">
-  <link href='http://fonts.googleapis.com/css?family=Droid+Sans+Mono' rel='stylesheet' type='text/css'>
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+  <!-- <link href='http://fonts.googleapis.com/css?family=Droid+Sans+Mono' rel='stylesheet' type='text/css'> -->
+  <script src="jquery/jquery-1.5.1.min.js"></script>
   <script src="flot/jquery.flot.js"></script>
   <script src="app.js"></script>
 </head>
 <body>
+
+<section>
+  <h2>All Time Traffic</h2>
+  <div id="long-term-traffic" class="graph"></div>
+</section>
+
+<section>
+  <h2>Short Term Traffic</h2>
+  <div id="short-term-traffic" class="graph"></div>
+  <ul id="followList">
+  </ul>
+</section>
+
+<section>
+  <div id="options">
+    Follow user <input type="text" id="user" value="172.16.143.100"><input type="button" value="Follow Traffic" id="addUser">
+  </div>
+</section>
+
+<section>
+  <div id="totals">
+    <h2>Total Traffic</h2>
+    <table id="total-out-traffic" class="statTable">
+      <thead>
+        <tr>
+          <th>User</th><th>Total Outbound</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
   
-<div id="traffic"></div>
-
-<div id="options">
-  Follow user <input type="text" id="user" value="cramforce"><input type="button" value="Follow Traffic" id="addUser">
-</div>
-
-<table id="userTraffic" class="statTable">
-  <thead>
-    <tr>
-      <th>User</th><th>Total Traffic</th>
-    </tr>
-  </thead>
-  <tbody>
-  </tbody>
-</table>
+    <table id="total-in-traffic" class="statTable">
+      <thead>
+        <tr>
+          <th>User</th><th>Total Inbound</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+</section>
 </body>	
 </html>

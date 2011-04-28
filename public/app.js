@@ -28,11 +28,14 @@
   Feed.prototype.attach = function(newData) {
     var self = this;
     var count = 0;
-    $.getJSON(self.url, function(data) {
-      self.data = data.rows.map(function(row) {
-        return [row.key[1], row.value];
+    
+    setInterval(function() {
+      $.getJSON(self.url, function(data) {
+        self.data = data.rows.map(function(row) {
+          return [row.key[1], row.value];
+        });
       });
-    });
+    }, 10000)
   }
   
   
@@ -87,8 +90,8 @@
     }
     setInterval(draw, 500);
     
-    addFeed('Inbound', 'in-172.16.143-N');
-    addFeed('Outbound', 'out-172.16.143-N');
+    addFeed('Inbound', 'in-N');
+    addFeed('Outbound', 'out-N');
     
     function addNamedFeed(name) {
       addFeed('In ' + name, 'in-' + name);
@@ -121,7 +124,7 @@
     function drawRanking(type) {
       
       var All_Time_Url = Feed_Url_Prefix +
-          '/traffic/_design/total_traffic/_view/10minutes?group=true&startkey=["' + type + '172.16.143"]&endkey=["' + type + '172.16.143X"]&callback=?';
+          '/traffic/_design/total_traffic/_view/10minutes?group=true&startkey=["' + type + '"]&endkey=["' + type + 'X"]&callback=?';
           
       $.getJSON(All_Time_Url, function(data) {
         var rows = data.rows.sort(function(a, b) {
@@ -144,8 +147,10 @@
     
     
     $(function() {
-      drawRanking('total-out-');
-      drawRanking('total-in-');
+      setInterval(function() {
+        drawRanking('totalout-');
+        drawRanking('totalin-');
+      }, 10000)
     })
     
   });

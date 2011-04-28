@@ -1,8 +1,8 @@
 
 body {
     overflow-x: hidden;
-    font-family: 'Droid Sans Mono', arial, serif;
-    color: white;
+    font-family: 'Droid Sans', arial, serif;
+    color: black;
     background-color: black;
 }
 
@@ -17,14 +17,21 @@ body {
 }
 
 section {
-  background-color: #ccc;
   margin: 5px;
   padding: 10px;
-  border-radius: 15px;
+  border-radius: 2px;
+  
+  background: #fb83fa; /* old browsers */
+  background: -moz-linear-gradient(top, #fb83fa 0%, #e93cec 100%); /* firefox */
+
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#fb83fa), color-stop(100%,#e93cec)); /* webkit */
+
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fb83fa', endColorstr='#e93cec',GradientType=0 ); /* ie */
+
+  background: -o-linear-gradient(top, #fb83fa 0%,#e93cec 100%); /* opera */
 }
 
 .statTable {
-	background: black;
 	width: 390px;
 	border-collapse: collapse;
 	text-align: left;
@@ -32,12 +39,10 @@ section {
 }
 .statTable th {
 	font-weight: normal;
-	color: white;
 	padding: 10px 8px;
-	border-bottom: 2px solid grey;
+	border-bottom: 2px solid;
 }
 .statTable td {
-	color: white;
 	padding: 9px 8px 0px 8px;
 }
 .statTable td:nth-child( even ) {

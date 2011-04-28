@@ -6,24 +6,31 @@ function(doc) {
     var tuple = doc.tuples[i];
     if (!tuple.srcIP || !tuple.dstIP) continue;
     
-    var time = parseInt(doc._id, 10);
+    var tp = doc._id.match(/(\d+)-(\d+)-(\d+)\.(\d\d)(\d\d)(\d\d)/);
     
-    time = time - time % timeRound;
+    if(tp) {
+      
+      var date = new Date(tp[1], parseInt(tp[2])-1, tp[3], tp[4], tp[5], tp[6]);
+      
+      var time = date.getTime();
     
-    var val = parseInt(tuple.octets, 10);
+      time = time - time % timeRound;
     
-    var key;
-    if (tuple.srcIP.indexOf('172.16.143') == 0) {
-      key = 'out-' + tuple.srcIP;
-    }
-    else if (tuple.dstIP.indexOf('172.16.143') == 0) {
-      key = 'in-' + tuple.dstIP;
-    }
+      var val = parseInt(tuple.octets, 10);
     
-    if (key) {
-      emit(['total-' + key], val);
-      emit([key, time], val);
-      emit([key.replace(/\.\d+$/, '-N'), time], val);
+      var key;
+      if (tuple.srcIP.indexOf('.') == -1) { // No IP :)
+        key = 'out-' + tuple.srcIP;
+      }
+      else if (tuple.dstIP.indexOf('.') == -1) { // No IP :)
+        key = 'in-' + tuple.dstIP;
+      }
+    
+      if (key) {
+        emit(['total' + key], val);
+        emit([key, time], val);
+        emit([key.replace(/-.*$/, '-N'), time], val);
+      }
     }
   }
 }

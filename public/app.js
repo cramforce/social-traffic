@@ -29,13 +29,16 @@
     var self = this;
     var count = 0;
     
-    setInterval(function() {
+    function fetch() {
       $.getJSON(self.url, function(data) {
         self.data = data.rows.map(function(row) {
           return [row.key[1], row.value];
         });
       });
-    }, 10000)
+    }
+    
+    setInterval(fetch, 10000);
+    fetch();
   }
   
   
@@ -90,12 +93,12 @@
     }
     setInterval(draw, 500);
     
-    addFeed('Inbound', 'in-N');
-    addFeed('Outbound', 'out-N');
+    addFeed('All Inbound', 'in-N');
+    addFeed('All Outbound', 'out-N');
     
     function addNamedFeed(name) {
       addFeed('In ' + name, 'in-' + name);
-      addFeed('Out' + name, 'out-' + name);
+      addFeed('Out ' + name, 'out-' + name);
     }
     
     $('#addUser').click(function() {
@@ -147,10 +150,12 @@
     
     
     $(function() {
-      setInterval(function() {
+      function d() {
         drawRanking('totalout-');
         drawRanking('totalin-');
-      }, 10000)
+      }
+      setInterval(d, 10000);
+      d();
     })
     
   });

@@ -1,0 +1,3 @@
+[submodule "public/preso"]
+	path = public/preso
+	url = git@github.com:cramforce/jsconf-wifi-deck.git

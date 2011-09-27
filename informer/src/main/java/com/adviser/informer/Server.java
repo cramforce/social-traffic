@@ -1,7 +1,7 @@
 package com.adviser.informer;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.component.jetty.JettyHttpComponent;
+import org.apache.camel.component.restlet.RestletComponent;
 import org.apache.camel.impl.DefaultCamelContext;
 
 import com.adviser.informer.model.Done;
@@ -24,10 +24,10 @@ public class Server
           Traffics.init(streamies);
           final CamelContext camelContext = new DefaultCamelContext();
           camelContext.disableJMX();
-          final JettyHttpComponent jhc = new JettyHttpComponent();
+          final RestletComponent restlet = new RestletComponent();
           //final HeaderFilterStrategy hfs = new DefaultHttpFilterStrategy();
           //jhc.setHeaderFilterStrategy(hfs);
-          camelContext.addComponent("jetty", jhc);
+          camelContext.addComponent("restlet", restlet);
           try {
             camelContext.addRoutes(new Router(args, streamies));
             camelContext.start();

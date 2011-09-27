@@ -6,25 +6,23 @@ import java.util.LinkedList;
 
 import lombok.Getter;
 
-public class Traffic implements Serializable {
-
-  transient
-  private final UpdateTraffic updateTraffic;
-  
-  public Traffic(UpdateTraffic _updateTraffic) {
-    updateTraffic = _updateTraffic;
-  }
+public class History implements Serializable, Total {
   
   private static final long serialVersionUID = 5218832076545516584L;
 
   @Getter
   private LinkedList<Tuple> traffic = new LinkedList<Tuple>();
 
+  @Getter
+  transient private long inTotal = 0;
+  @Getter
+  transient private long outTotal = 0;
   
   private Tuple addTraffic(Tuple tuple, long inAmount, long outAmount) {
     tuple.inAmount += inAmount;
     tuple.outAmount += outAmount;
-    updateTraffic.updateTraffic(inAmount, outAmount);
+    inTotal += inAmount;
+    outTotal += outAmount;
     return tuple;
   }
 

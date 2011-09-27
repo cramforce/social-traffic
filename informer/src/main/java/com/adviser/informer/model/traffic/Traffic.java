@@ -19,7 +19,7 @@ public class Traffic extends CouchDbDocument {
 
   private static final long serialVersionUID = 978550300085359507L;
   
-  private List<Tuple> tuples;
+  private List<IpTuple> tuples;
   
   @JsonDeserialize(using = DateDeserializer.class)
   @JsonProperty("created_at")

@@ -15,7 +15,7 @@ public class DateDeserializer extends JsonDeserializer<Object> {
     try {
       return formatter.parse(str);
     } catch (Exception e) {
-      throw new IllegalArgumentException("Cannot parse date:", e);
+      throw new IllegalArgumentException("Cannot parse date:"+str, e);
     }    
   }
   public Object deserialize(JsonParser jp, DeserializationContext ctxt) {

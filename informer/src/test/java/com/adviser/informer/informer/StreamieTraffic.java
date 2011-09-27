@@ -2,7 +2,7 @@ package com.adviser.informer.informer;
 
 import java.util.LinkedList;
 
-import com.adviser.informer.model.streamie.Traffic;
+import com.adviser.informer.model.streamie.History;
 import com.adviser.informer.model.streamie.Tuple;
 
 import junit.framework.Test;
@@ -38,7 +38,7 @@ public class StreamieTraffic
      */
     public void testTrafficAdd()
     {
-       final Traffic traffic = new Traffic();
+       final History traffic = new History();
        traffic.add(10, 1, 1);
        final LinkedList<Tuple> tuples = traffic.getTraffic();
        assertEquals(tuples.size(), 1);

@@ -1,42 +1,96 @@
 package com.adviser.informer.model;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 
+import org.apache.commons.collections.list.SynchronizedList;
 import org.ektorp.changes.ChangesCommand;
 import org.ektorp.changes.ChangesFeed;
 import org.ektorp.changes.DocumentChange;
 import org.ektorp.impl.StdCouchDbConnector;
 
 import com.adviser.informer.model.streamie.Client;
+import com.adviser.informer.model.streamie.History;
 import com.adviser.informer.model.streamie.Streamie;
+import com.adviser.informer.model.traffic.IpTuple;
 import com.adviser.informer.model.traffic.Traffic;
-import com.adviser.informer.model.traffic.Tuple;
 
 public class Streamies extends Observable implements Runnable {
 
   public static final int INITIALIZE = 1;
+
+  private class ByTraffic {
+    private static final long serialVersionUID = 4981832330424047439L;
+
+    private PriorityBlockingQueue<Streamie> traffic = new PriorityBlockingQueue<Streamie>(1000, new Comparator<Streamie>(){
+
+      public int compare(Streamie arg0, Streamie arg1) {
+        final long ret = getTotal(arg1)-getTotal(arg0);
+        if (ret > 0) {
+          return 1;
+        } else if (ret < 0) {
+          return -1;
+        }
+        return 0;
+      }
+      public long getTotal(Streamie streamie) {
+        return streamie.getInTotal() + streamie.getOutTotal();
+      }
+    });
   
+    public void update(Long preTraffic, Long newTraffic, Streamie streamie) {
+      if (preTraffic.compareTo(newTraffic) == 0) {
+        return;
+      }
+      synchronized(streamie) {
+        traffic.remove(streamie);
+        traffic.add(streamie);
+      }
+    }
+
+    public List<Streamie> top(int count) {
+      final List<Streamie> ret = new LinkedList<Streamie>();
+      final Iterator<Streamie> i = traffic.iterator();
+      for(int j =0; j < 10 && i.hasNext(); ++j) {
+        ret.add(i.next());
+      }
+      return ret;
+    }
+  }
+
   private Map<String, Streamie> byId = null;
   private Map<String, Streamie> byTwitter = null;
   private Map<String, Streamie> byIp = null;
   private Map<String, Streamie> byMac = null;
-  private Map<Integer, Streamie> byTraffic = null;
+  private ByTraffic byTraffic = null;
+  private History totalTraffic = null;
+
   private Streamies() {
+    totalTraffic = new History();
     byId = new ConcurrentHashMap<String, Streamie>();
     byTwitter = new ConcurrentHashMap<String, Streamie>();
     byIp = new ConcurrentHashMap<String, Streamie>();
     byMac = new ConcurrentHashMap<String, Streamie>();
-    byTraffic = new ConcurrentHashMap<Integer, Streamie>();
+    byTraffic = new ByTraffic();
   }
 
   public Streamie findById(String id) {
     return byId.get(id);
+  }
+
+  public Streamie findByTwitter(String screename) {
+    return byTwitter.get(screename);
   }
 
   private void remove(String id) {
@@ -128,30 +182,51 @@ public class Streamies extends Observable implements Runnable {
     public abstract void completed(long last);
 
   }
-  
+
   public void add(Traffic traffic) {
-    final Iterator<Tuple> tuples = traffic.getTuples().iterator();
+    final Iterator<IpTuple> tuples = traffic.getTuples().iterator();
     while (tuples.hasNext()) {
-      final Tuple tuple = tuples.next();
+      final IpTuple tuple = tuples.next();
       long inAmount = 0;
       long outAmount = 0;
       String matchIp = tuple.getDstIP();
       Streamie streamie = byIp.get(matchIp);
       if (streamie == null) {
-        matchIp = tuple.getSrcIP();
-        streamie = byIp.get(matchIp);
+        streamie = byTwitter.get(matchIp);
         if (streamie == null) {
-          continue;
+          matchIp = tuple.getSrcIP();
+          streamie = byIp.get(matchIp);
+          if (streamie == null) {
+            streamie = byTwitter.get(matchIp);
+            if (streamie == null) {
+              continue;
+            } else {
+              outAmount = tuple.getOctets();
+            }
+          } else {
+            outAmount = tuple.getOctets();
+          }
         } else {
-          outAmount = tuple.getOctets();
+          inAmount = tuple.getOctets();
         }
       } else {
         inAmount = tuple.getOctets();
       }
-      streamie.add(matchIp, traffic, inAmount, outAmount);
+      final long timeStamp = traffic.getCreatedAt().getTime() / 1000;
+      totalTraffic.add(timeStamp, inAmount, outAmount);
+      final Long preTraffic = new Long(streamie.getInTotal()
+          + streamie.getOutTotal());
+      streamie.add(matchIp, timeStamp, inAmount, outAmount);
+      final Long postTraffic = new Long(streamie.getInTotal()
+          + streamie.getOutTotal());
+      byTraffic.update(preTraffic, postTraffic, streamie);
     }
   }
-  
+
+  public List<Streamie> top(int count) {
+    return byTraffic.top(count);
+  }
+
   public void run() {
 
     final BlockingQueue<DocumentChange> q = new LinkedBlockingQueue<DocumentChange>();
@@ -163,7 +238,7 @@ public class Streamies extends Observable implements Runnable {
     q.addAll(feed);
     System.out.println("Initial Read until len:" + feed.size() + ":"
         + feed.get(feed.size() - 1).getSequence());
-    
+
     final Streamies self = this;
     final Completed c = new Completed(feed.get(feed.size() - 1).getSequence()) {
 

@@ -8,7 +8,7 @@ import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.deser.StdDeserializer.IntegerDeserializer;
 
 @Data
-public class Tuple implements Serializable {
+public class IpTuple implements Serializable {
   private static final long serialVersionUID = -7389405833651561486L;
 
   String srcIP;

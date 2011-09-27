@@ -37,7 +37,8 @@ public class JSDate
      */
     public void testParseJSDate()
     {
-       final String str = "Thu Apr 28 2011 17:38:56 GMT+0200 (CEST)";
+       //final String str = "Thu Apr 28 2011 17:38:56 GMT+0200 (CEST)";
+      final String str = "Mon May 30 2011 10:17:36 GMT+0200 (CEST)";
        //final String str = "Thu Apr 28 2011 17:38:56 CEST";
        final Date date = DateDeserializer.str2Date(str);
        assertNotNull("date should not be null", date);

@@ -43,7 +43,7 @@ public class Traffics extends Observable implements Runnable {
       try {
         while (true) {
           final DocumentChange dc = q.take();
-          if (dc.getId().compareTo("2011-05-02.181301") < 0) {
+          if (true || dc.getId().compareTo("2011-05-03.181301") < 0) {
             if (dc.isDeleted()) {
               throw new RuntimeException("traffic could not deleted");
             } else {
@@ -51,7 +51,7 @@ public class Traffics extends Observable implements Runnable {
               streamies.add(traffic);
             }
           }
-          System.out.println("Traffics:" + dc.getId());
+          //System.out.println("Traffics:" + dc.getId());
           c.done(dc.getSequence());
         }
       } catch (Exception e) {

@@ -24,11 +24,11 @@ public class Client implements Serializable {
   private String useragent;
   @JsonDeserialize(using = DateDeserializer.class)
   private Date created_at;
-  private Traffic traffic;
-  public Traffic getTraffic() {
-    if (traffic == null) {
-      traffic = new Traffic(updateTraffic);
+  private History history;
+  public History getHistory() {
+    if (history == null) {
+      history = new History();
     }
-    return traffic;
+    return history;
   }
 }

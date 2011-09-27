@@ -3,6 +3,10 @@ package com.adviser.informer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -40,7 +44,7 @@ public class Router extends RouteBuilder {
   private ListenAddress listenaddress = null;
 
   private Streamies streamies = null;
-  
+
   public Router(String[] args, Streamies _streamies) {
     streamies = _streamies;
     if (args.length == 1) {
@@ -53,16 +57,20 @@ public class Router extends RouteBuilder {
     init();
   }
 
-
   private void init() {
   }
 
   public void configure() {
     System.out.println("Version:" + getServer());
     System.out.println("Listen On:" + listenaddress.toString());
-    from("jetty:http://" + listenaddress.toString() + "" +
-    		"?matchOnUriPrefix=true")
-        .bean(this, "Informer");
+    from(
+        "restlet:http://" + listenaddress.toString()
+            + "/traffic/byTwitter/{screenName}?restletMethods=get").bean(this,
+        "byTwitter");
+    from(
+        "restlet:http://" + listenaddress.toString()
+            + "/traffic/top10?restletMethods=get").bean(this,
+        "top10");
   }
 
   private String _version = null;
@@ -96,25 +104,36 @@ public class Router extends RouteBuilder {
     return _version;
   }
 
-  public void Informer(Exchange exchange) {
+  public void byTwitter(Exchange exchange) {
     final Message _in = exchange.getIn();
-      final String twitterId = _in.getHeader(Exchange.HTTP_PATH, String.class).substring("/traffic/byTwitter/".length());
-      final Message _out = exchange.getOut();
-      Streamie streamie = streamies.findById(twitterId);
-      
-      StringWriter str = new StringWriter();
-      try {
-        (new ObjectMapper()).writeValue(str, streamie);
-      } catch (JsonGenerationException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      } catch (JsonMappingException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      }
-      _out.setBody(str.toString());
+    final String screenName = _in.getHeader("screenName", String.class);
+    final Message _out = exchange.getOut();
+    Streamie streamie = streamies.findByTwitter(screenName);
+
+    StringWriter str = new StringWriter();
+    try {
+      (new ObjectMapper()).writeValue(str, streamie);
+    } catch (JsonGenerationException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (JsonMappingException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    _out.setBody(str.toString());
+  }
+  
+  public void top10(Exchange exchange) {
+    final Iterator<Streamie> top10 = streamies.top(10).iterator();
+    final List<String> screenNames = new LinkedList<String>();
+    while (top10.hasNext()) {
+      final Streamie s = top10.next();
+      screenNames.add(s.getTwitter().getScreen_name());
+    }  
+    final Message _out = exchange.getOut();
+    _out.setBody(screenNames.toString());
   }
 }

@@ -1,5 +1,7 @@
 (function() {
   
+  var BASE_URL = 'http://10.109.1.9:2911';
+  
   var Radius = 50;
   
   var Locations = {
@@ -13,37 +15,53 @@
     ap7: {"x":854,"y":274},
     ap8: {"x":945,"y":334},
     ap9: {"x":680,"y":251},
-    ap10: {"x":429,"y":261},
-    ap11: {"x":436,"y":168},
-    ap12: {"x":695,"y":151}
+    apa: {"x":429,"y":261},
+    apb: {"x":436,"y":168},
+    apc: {"x":695,"y":151},
+    apd: {"x":336,"y":600},
+    ape: {"x":777,"y":298},
+    apf: {"x":869,"y":696},
+    apg: {"x":336,"y":94},
+    aph: {"x":436,"y":168},
+    api: {"x":344,"y":105},
+    apj: {"x":700,"y":89},
+    apk: {"x":854,"y":274},
+    apl: {"x":945,"y":334},
+    apm: {"x":680,"y":251},
+    apn: {"x":429,"y":261}
   };
   
   function position(user, point) {
     var ap = user.ap;
     var id = user.mac;
     var a = document.getElementById(id);
-    if (!a) {
-      a = document.createElement('a');
-      a.id = id;
-      a.href = 'https://twitter.com/' + encodeURIComponent(a.screenName);
-      var image = new Image();
-      image.src = 'images/' + user.image;
-      image.width = 32;
-      image.height = 32;
-      a.appendChild(image);
-      document.body.appendChild(a);
-      a.style.position = 'absolute';
-      a.style.display = 'block';
-      a.style.top = 0;
-      a.style.left = 0;
-      a.style.zIndex = 2;
-      a.style.webkitTransitionProperty = 'transform';
-      a.style.webkitTransitionDuration = '2s';
-      a.style.mozTransitionProperty = 'transform';
-      a.style.mozTransitionDuration = '2s';
+    if(user.image) {
+      console.log(user)
+      if (!a) {
+        a = document.createElement('a');
+        a.id = id;
+        a.href = 'https://twitter.com/' + encodeURIComponent(user.screenName);
+        var image = new Image();
+        image.src = user.image;
+        image.width = 32;
+        image.height = 32;
+        a.appendChild(image);
+        document.body.appendChild(a);
+        a.style.position = 'absolute';
+        a.style.display = 'block';
+        a.style.top = 0;
+        a.style.left = 0;
+        a.style.zIndex = 2;
+        a.style.webkitTransitionProperty = 'transform';
+        a.style.webkitTransitionDuration = '2s';
+        a.style.mozTransitionProperty = 'transform';
+        a.style.mozTransitionDuration = '2s';
+      }
+      a.style.webkitTransform = 'translate(' + point.x + 'px, ' + point.y + 'px)';
+      a.style.mozTransform = 'translate(' + point.x + 'px, ' + point.y + 'px)';
+    } else {
+      console.log('Missing image ', user);
     }
-    a.style.webkitTransform = 'translate(' + point.x + 'px, ' + point.y + 'px)';
-    a.style.mozTransform = 'translate(' + point.x + 'px, ' + point.y + 'px)';
   }
   
   function pointsOnCircle(pointCount, radius, center) {
@@ -62,17 +80,26 @@
   }
   
   function load() {
-    $.get('./data.json', function(data) {
+    $.getJSON(BASE_URL + '/streamies?callback=?', function(data) {
       function draw() {
         var aps = {};
         var count = 0;
-        data.forEach(function(user) {
-          user.ap = 'ap' + Math.floor(Math.random() * 9);
-          user.mac = count++;
-          if (!aps[user.ap]) {
-            aps[user.ap] = [];
-          }
-          aps[user.ap].push(user);
+        data.forEach(function(userData) {
+          userData.clients.forEach(function(client) {
+            var accessPoints = client.accessPoints;
+            if(accessPoints && accessPoints.length > 0) {
+              var user = {
+                screenName: userData.screenName,
+                ap: accessPoints.shift().toLowerCase().replace(/^v|h/, ''),
+                image: userData.details.profile_image_url_https
+              };
+              user.mac = client.hwaddr;
+              if (!aps[user.ap]) {
+                aps[user.ap] = [];
+              }
+              aps[user.ap].push(user);
+            }
+          });
         });
         for (var ap in aps) {
           var points = pointsOnCircle(aps[ap].length, Radius, Locations[ap]);
@@ -101,7 +128,6 @@
         }
       }
       draw();
-      setInterval(draw, 5000);
     });
   }
   load();

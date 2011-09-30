@@ -28,7 +28,29 @@
     apk: {"x":854,"y":274},
     apl: {"x":945,"y":334},
     apm: {"x":680,"y":251},
-    apn: {"x":429,"y":261}
+    apn: {"x":429,"y":261},
+    
+    "00272212ac23": {"x":76,"y":18},
+    "00272212abaa": {"x":76,"y":201},
+    "00272212ab0e": {"x":251,"y":81},
+    "00272212ac21": {"x":278,"y":312},
+    "00272212ac49": {"x":46,"y":492},
+    "00272212abc6": {"x":181,"y":490},
+    "00272212ac65": {"x":363,"y":604},
+    "00272212ab88": {"x":628,"y":532},
+    "00272212ac68": {"x":619,"y":654},
+    "00272212ab99": {"x":907,"y":528},
+    "00272212ab9b": {"x":907,"y":671},
+    "00272212ac54": {"x":904,"y":375},
+    "00272212aba0": {"x":899,"y":266},
+    "00272212ac4e": {"x":717,"y":384},
+    "00272212ab98": {"x":637,"y":141},
+    "00272212abba": {"x":703,"y":65},
+    "00272212ab68": {"x":400,"y":371},
+    "00272212ab78": {"x":398,"y":164},
+    "00272212ac59": {"x":311,"y":69}
+    /*00272212abc3
+    00272212abd1*/
   };
   
   function position(user, point) {
@@ -90,7 +112,7 @@
             if(accessPoints && accessPoints.length > 0) {
               var user = {
                 screenName: userData.screenName,
-                ap: accessPoints.shift().toLowerCase().replace(/^v|h/, ''),
+                ap: accessPoints.shift().toLowerCase().replace(/^v|h/, '').replace(/\:/g, ''),
                 image: userData.details.profile_image_url_https
               };
               user.mac = client.hwaddr;
@@ -131,6 +153,14 @@
     });
   }
   load();
+  
+  function interval() {
+    setTimeout(function() {
+      load();
+      interval();
+    }, 5000)
+  }
+  interval();
   
   $('#floor-plan').click(function(e) {
     console.log(e);

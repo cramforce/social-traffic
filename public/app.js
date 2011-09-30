@@ -1,7 +1,7 @@
 
 (function() {
   
-  var Feed_Url_Prefix = 'http://127.0.0.1:5984';
+  var Feed_Url_Prefix = 'http://192.168.1.24:2911';
   
   var options = {
     xaxis: { mode: 'time' }
@@ -31,9 +31,13 @@
     
     function fetch() {
       $.getJSON(self.url, function(data) {
-        self.data = data.rows.map(function(row) {
-          return [row.key[1], row.value];
-        });
+        self.data = [];
+        function aggregate(row) {
+          return [row[0], row[1] + row[2]];
+        }
+        self.longTerm = data.longTerm.map(aggregate);
+        self.shortTerm = data.shortTerm.map(aggregate);
+        console.log(self.data);
       });
     }
     
@@ -56,22 +60,18 @@
         return item.active;
       });
       
-      $.plot(longTermPlaceholder, active, options);
-      
-      var shortTermData = active.map(function(feed) { return feed.shortTermCopy(); })
-      
-      $.plot(shortTermPlaceholder, shortTermData, options);
+      $.plot(longTermPlaceholder,  active.map(function(feed) { return { data: feed.longTerm } }), options);
+      $.plot(shortTermPlaceholder, active.map(function(feed) { return { data: feed.shortTerm } }), options);
     }
     
-    function addFeed(name, key) {
-
-      var url = '/traffic/_design/total_traffic/_view/10minutes?group=true&startkey=[%22' + encodeURIComponent(key) + '%22]&endkey=[%22' + encodeURIComponent(key) + '.%22]&callback=?';
+    function addFeed(name, screenName) {
+      var url = '/traffic/total' + (screenName ? '/'+encodeURIComponent(screenName) : '') + '?callback=?';
 
       var feed = new Feed(name, Feed_Url_Prefix + url, draw);
       Data.push(feed);
       feed.attach();
       
-      var id = 'check-' + key;
+      var id = 'check-' + name;
       var ul = $('#followList');
       var li = $('<li />');
       var checkbox = $('<input />').attr({
@@ -93,12 +93,11 @@
     }
     setInterval(draw, 500);
     
-    addFeed('All Inbound', 'in-N');
-    addFeed('All Outbound', 'out-N');
+    addFeed('All');
     
     function addNamedFeed(name) {
-      addFeed('In ' + name, 'in-' + name);
-      addFeed('Out ' + name, 'out-' + name);
+      addFeed('In ' + name, name);
+      //addFeed('Out ' + name, 'out-' + name);
     }
     
     $('#addUser').click(function() {
@@ -124,21 +123,17 @@
       }
     }
     
-    function drawRanking(type) {
+    function drawRanking() {
       
       var All_Time_Url = Feed_Url_Prefix +
-          '/traffic/_design/total_traffic/_view/10minutes?group=true&startkey=["' + type + '"]&endkey=["' + type + 'X"]&callback=?';
+          '/traffic/top10?count=500&callback=?';
           
-      $.getJSON(All_Time_Url, function(data) {
-        var rows = data.rows.sort(function(a, b) {
-          return b.value - a.value;
-        });
-        
+      $.getJSON(All_Time_Url, function(rows) {        
         var html = rows.map(function(row) {
-          return '<tr><td class="name">' + row.key[0].replace(type, '') + '</td><td>' + formatBytes(row.value) + '</td></tr>';
+          return '<tr><td class="name">' + row.screenName + '</td><td>' + formatBytes(row.inTotal + row.outTotal) + '</td></tr>';
         }).join('\n');
 
-        $('#' + type + 'traffic tbody').html(html);
+        $('#user-traffic tbody').html(html);
       });
       
     };
@@ -151,8 +146,7 @@
     
     $(function() {
       function d() {
-        drawRanking('totalout-');
-        drawRanking('totalin-');
+        drawRanking();
       }
       setInterval(d, 10000);
       d();

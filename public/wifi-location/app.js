@@ -120,6 +120,10 @@
                 aps[user.ap] = [];
               }
               aps[user.ap].push(user);
+              if(!Locations[user.ap]) {
+                console.log('Missing ' + user.ap);
+              }
+              console.log(user.ap)
             }
           });
         });
